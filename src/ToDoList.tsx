@@ -20,6 +20,8 @@ export const ToDoList: FC = () => {
       <ul></ul>
       <button
         id="add"
+        // we don't need to document.querySelector('#add') to addEventListener
+        // instead, we can onClick right here and just go at it!
         onClick={async () => {
           await ToDosAPI.create({
             title: 'ToDo Title',
