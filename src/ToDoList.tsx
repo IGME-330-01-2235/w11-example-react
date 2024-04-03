@@ -1,9 +1,13 @@
-import { FC, useEffect, useState } from 'react';
+import { FC, useEffect, useRef, useState } from 'react';
 import { ToDosAPI } from './ToDosAPI';
 import { ToDo as ToDoType } from './ToDosAPI/ToDo.type';
 
 export const ToDoList: FC = () => {
   const [toDos, setToDos] = useState<ToDoType[]>([]);
+  const createDialogRef = useRef<HTMLDialogElement>(null);
+
+  const [title, setTitle] = useState('');
+  const descriptionRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const fetchToDos = async () => {
@@ -21,16 +25,53 @@ export const ToDoList: FC = () => {
       <button
         id="add"
         onClick={async () => {
-          await ToDosAPI.create({
-            title: 'ToDo Title',
-            description: 'ToDo Description',
-            complete: false,
-          });
-          setToDos(await ToDosAPI.read());
+          setTitle('');
+          descriptionRef.current!.value = '';
+          createDialogRef.current?.showModal();
         }}
       >
         +
       </button>
+
+      <dialog id="createDialog" ref={createDialogRef}>
+        <h1>What ToDo?</h1>
+        <form method="dialog">
+          <div>
+            <label>Title</label>
+            <input
+              type="text"
+              placeholder="enter a title"
+              value={title}
+              onChange={(event) => {
+                setTitle(event.target.value);
+              }}
+            />
+          </div>
+
+          <div>
+            <label>Description</label>
+            <input
+              type="text"
+              placeholder="enter a description"
+              ref={descriptionRef}
+            />
+          </div>
+
+          <button
+            onClick={async () => {
+              await ToDosAPI.create({
+                title: title || 'ToDo Title',
+                description:
+                  descriptionRef.current?.value || 'ToDo Description',
+                complete: false,
+              });
+              setToDos(await ToDosAPI.read());
+            }}
+          >
+            Create To-Do
+          </button>
+        </form>
+      </dialog>
     </>
   );
 };
