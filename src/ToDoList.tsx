@@ -34,10 +34,16 @@ export const ToDoList: FC = () => {
             {...toDo}
             key={toDo.id}
             toggleAction={async () => {
+              // Since we define the body of the function out here,
+              // we still have access to setToDos
+              // so we can kick off the toggle, and update the list.
+              // (we wouldn't have that available to us from within the <ToDo> definition)
               await ToDosAPI.update.toggle(toDo.id, toDo.complete);
               setToDos(await ToDosAPI.read());
             }}
             editAction={async () => {
+              // Same thing here!
+              // With the bonus of being able to set the Id/Title/Description for the edit <dialog>
               setEditId(toDo.id);
               setEditTitle(toDo.title);
               editDescriptionRef.current!.value = toDo.description;
@@ -96,6 +102,8 @@ export const ToDoList: FC = () => {
           </button>
         </form>
       </dialog>
+
+      {/* Ugh. Duplicating this <dialog> is painful. These two elements are almost the same! */}
 
       <dialog id="editDialog" ref={editDialogRef}>
         <h1>Edit ToDo:</h1>
