@@ -1,6 +1,7 @@
 import { FC, useEffect, useRef, useState } from 'react';
 import { ToDosAPI } from './ToDosAPI';
 import { ToDo as ToDoType } from './ToDosAPI/ToDo.type';
+import { ToDo } from './ToDo';
 
 export const ToDoList: FC = () => {
   const [toDos, setToDos] = useState<ToDoType[]>([]);
@@ -21,7 +22,11 @@ export const ToDoList: FC = () => {
   return (
     <>
       <h1>ToDos:</h1>
-      <ul></ul>
+      <ul>
+        {toDos.map((toDo) => (
+          <ToDo {...toDo} key={toDo.id} />
+        ))}
+      </ul>
       <button
         id="add"
         onClick={async () => {
