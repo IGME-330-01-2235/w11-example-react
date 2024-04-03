@@ -1,0 +1,37 @@
+li {
+  border-radius: 4px;
+  border: 1px solid #efefef;
+  box-shadow: 2px 2px 4px #cacaca;
+  margin-bottom: 10px;
+  padding: 4px;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+li input,
+li button {
+  min-width: unset;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+}
+
+li input:checked + div {
+  text-decoration: line-through;
+}
+
+li h2 {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+li p {
+  font-size: 12px;
+  color: #333333;
+}
+
+li div {
+  flex-grow: 1;
+}
