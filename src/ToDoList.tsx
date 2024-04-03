@@ -23,6 +23,7 @@ export const ToDoList: FC = () => {
     <>
       <h1>ToDos:</h1>
       <ul>
+        {/* This is a neat little way of rendering a <ToDo> for every element in toDos[] */}
         {toDos.map((toDo) => (
           <ToDo {...toDo} key={toDo.id} />
         ))}
