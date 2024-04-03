@@ -2,19 +2,17 @@ import { FC, useEffect, useRef, useState } from 'react';
 import { ToDosAPI } from './ToDosAPI';
 import { ToDo as ToDoType } from './ToDosAPI/ToDo.type';
 import { ToDo } from './ToDo';
+import { ToDoDialog } from './ToDoDialog';
 
 export const ToDoList: FC = () => {
   const [toDos, setToDos] = useState<ToDoType[]>([]);
-  const createDialogRef = useRef<HTMLDialogElement>(null);
 
-  const [title, setTitle] = useState('');
-  const descriptionRef = useRef<HTMLInputElement>(null);
+  const createDialogRef = useRef<HTMLDialogElement>(null);
+  const [createKey, setCreateKey] = useState(0);
 
   const editDialogRef = useRef<HTMLDialogElement>(null);
-
-  const [editId, setEditId] = useState('');
-  const [editTitle, setEditTitle] = useState('');
-  const editDescriptionRef = useRef<HTMLInputElement>(null);
+  const [editKey, setEditKey] = useState(0);
+  const [editSubject, setEditSubject] = useState<ToDoType | null>(null);
 
   useEffect(() => {
     const fetchToDos = async () => {
@@ -22,6 +20,18 @@ export const ToDoList: FC = () => {
     };
     fetchToDos();
   }, []);
+
+  useEffect(() => {
+    if (createKey !== 0) {
+      createDialogRef.current?.showModal();
+    }
+  }, [createKey]);
+
+  useEffect(() => {
+    if (editKey !== 0) {
+      editDialogRef.current?.showModal();
+    }
+  }, [editKey]);
 
   console.log('render', toDos);
 
@@ -38,106 +48,70 @@ export const ToDoList: FC = () => {
               setToDos(await ToDosAPI.read());
             }}
             editAction={async () => {
-              setEditId(toDo.id);
-              setEditTitle(toDo.title);
-              editDescriptionRef.current!.value = toDo.description;
-              editDialogRef.current?.showModal();
+              setEditSubject(toDo);
+              setEditKey(Date.now());
             }}
           />
         ))}
       </ul>
       <button
         id="add"
-        onClick={async () => {
-          setTitle('');
-          descriptionRef.current!.value = '';
-          createDialogRef.current?.showModal();
+        onClick={() => {
+          setCreateKey(Date.now());
         }}
       >
         +
       </button>
+      {toDos.some((toDo) => toDo.complete) && (
+        <button
+          onClick={async () => {
+            const completedToDos = toDos.filter((toDo) => toDo.complete);
+            const deleteCalls = completedToDos.map((toDo) =>
+              ToDosAPI.delete(toDo.id),
+            );
+            await Promise.all(deleteCalls);
+            setToDos(await ToDosAPI.read());
+          }}
+        >
+          Delete Completed ToDos
+        </button>
+      )}
 
-      <dialog id="createDialog" ref={createDialogRef}>
-        <h1>What ToDo?</h1>
-        <form method="dialog">
-          <div>
-            <label>Title</label>
-            <input
-              type="text"
-              placeholder="enter a title"
-              value={title}
-              onChange={(event) => {
-                setTitle(event.target.value);
-              }}
-            />
-          </div>
+      <ToDoDialog
+        key={`create-${createKey}`}
+        headingText="What ToDo?"
+        buttonText="Create ToDo"
+        toDoId=""
+        initialTitle=""
+        initialDescription=""
+        dialogAction={async (id, title, description) => {
+          await ToDosAPI.create({
+            title: title || 'ToDo Title',
+            description: description || 'ToDo Description',
+            complete: false,
+          });
+          setToDos(await ToDosAPI.read());
+        }}
+        ref={createDialogRef}
+      />
 
-          <div>
-            <label>Description</label>
-            <input
-              type="text"
-              placeholder="enter a description"
-              ref={descriptionRef}
-            />
-          </div>
-
-          <button
-            onClick={async () => {
-              await ToDosAPI.create({
-                title: title || 'ToDo Title',
-                description:
-                  descriptionRef.current?.value || 'ToDo Description',
-                complete: false,
-              });
-              setToDos(await ToDosAPI.read());
-            }}
-          >
-            Create To-Do
-          </button>
-        </form>
-      </dialog>
-
-      <dialog id="editDialog" ref={editDialogRef}>
-        <h1>Edit ToDo:</h1>
-        <form method="dialog">
-          <div>
-            <label>Title</label>
-            <input
-              id="editTitle"
-              type="text"
-              name="title"
-              placeholder="enter a title"
-              value={editTitle}
-              onChange={(event) => {
-                setEditTitle(event.target.value);
-              }}
-            />
-          </div>
-          <div>
-            <label>Description</label>
-            <input
-              id="editDescription"
-              name="description"
-              type="text"
-              placeholder="enter a description"
-              ref={editDescriptionRef}
-            />
-          </div>
-          <input type="hidden" id="editId" name="id" />
-          <button
-            onClick={async () => {
-              await ToDosAPI.update.edit(editId, {
-                title: editTitle || 'ToDo Title',
-                description:
-                  editDescriptionRef.current?.value || 'ToDo Description',
-              });
-              setToDos(await ToDosAPI.read());
-            }}
-          >
-            Edit To-Do
-          </button>
-        </form>
-      </dialog>
+      <ToDoDialog
+        key={`edit-${editKey}`}
+        headingText="Edit ToDo:"
+        buttonText="Edit ToDo"
+        toDoId={editSubject?.id || ''}
+        initialTitle={editSubject?.title || ''}
+        initialDescription={editSubject?.description || ''}
+        dialogAction={async (id, title, description) => {
+          await ToDosAPI.update.edit(id, {
+            title,
+            description,
+          });
+          setEditSubject(null);
+          setToDos(await ToDosAPI.read());
+        }}
+        ref={editDialogRef}
+      />
     </>
   );
 };
