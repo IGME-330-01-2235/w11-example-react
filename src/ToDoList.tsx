@@ -18,6 +18,19 @@ export const ToDoList: FC = () => {
     <>
       <h1>ToDos:</h1>
       <ul></ul>
+      <button
+        id="add"
+        onClick={async () => {
+          await ToDosAPI.create({
+            title: 'ToDo Title',
+            description: 'ToDo Description',
+            complete: false,
+          });
+          setToDos(await ToDosAPI.read());
+        }}
+      >
+        +
+      </button>
     </>
   );
 };
