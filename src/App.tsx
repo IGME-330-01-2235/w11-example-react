@@ -1,17 +1,9 @@
-import { ToDo } from './ToDo';
+import { ToDoList } from './ToDoList';
 
 function App() {
   return (
-    <main style={{ padding: 40 }}>
-      <h1>Hello, React</h1>
-      <ul>
-        <ToDo />
-        <ToDo
-          title="Title Prop"
-          description="Description Prop"
-          complete={true}
-        />
-      </ul>
+    <main>
+      <ToDoList />
     </main>
   );
 }
